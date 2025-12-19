@@ -66,4 +66,20 @@ public class CrudServiceTest {
 
         assertThat(result).isEqualTo(pos);
     }
+
+   /* @Test
+    void failedTestGetById(){
+        Long id = 42L;
+        when(dataService.getById(id)).thenReturn(null);
+
+        assertThrows(NotFoundException.class, () -> service.getById(id));
+
+    }*/
+    @Test
+    void testDeleteById(){
+        Long id = 7L;
+        doNothing().when(dataService).delete(id);
+        service.delete(id);
+        verify(dataService, times(1)).delete(id);
+    }
 }
