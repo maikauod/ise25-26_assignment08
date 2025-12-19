@@ -155,22 +155,57 @@ public class ReviewServiceTest {
                 .approvalCount(2)
                 .approved(false)
                 .build();
-        
         // when
         Review updatedReview = reviewService.updateApprovalStatus(unapprovedReview);
-        
         // then
         assertFalse(updatedReview.approved());
-        
         // when
         Review approvedReview = unapprovedReview.toBuilder()
                 .approvalCount(approvalConfiguration.minCount())
                 .build();
-        
         // when
         updatedReview = reviewService.updateApprovalStatus(approvedReview);
-        
         // then
         assertTrue(updatedReview.approved());
     }
-}
+
+    @Test
+    void failedApprovalStatusQuorumForUnapprovedReview() {
+        ApprovalConfiguration threshold = new ApprovalConfiguration(3);
+        reviewService = new ReviewServiceImpl(reviewDataService, userDataService, posDataService, threshold);
+        User user = TestFixtures.getUserFixtures().getFirst();
+
+        assertNotNull(user.getId());
+        Review review = TestFixtures.getReviewFixtures().getLast().toBuilder()
+                .approvalCount(1)
+                .approved(true)
+                .build();
+        assertNotNull(review.getId());
+       // assertThat(review.approvalCount()).isEqualTo(0);
+
+
+
+        //when
+        when(userDataService.getById(user.getId())).thenReturn(user);
+
+        when(reviewDataService.getById(review.getId())).thenReturn(review);
+
+        when(reviewDataService.upsert(any(Review.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        //assertThat(review.author().getId().equals(user.getId())).isFalse();
+
+
+        // when
+        Review updatedReview = reviewService.approve(review, user.getId());
+        // then
+
+        verify(userDataService).getById(user.getId());
+        verify(reviewDataService).getById(review.getId());
+        verify(reviewDataService).upsert(any(Review.class));
+
+        assertThat(updatedReview.approvalCount()).isEqualTo(2);
+        assertThat(updatedReview.approved()).isFalse();
+    }
+
+    }
+
