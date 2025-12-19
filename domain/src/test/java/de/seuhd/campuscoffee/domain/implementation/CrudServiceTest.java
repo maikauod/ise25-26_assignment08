@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static de.seuhd.campuscoffee.domain.tests.TestFixtures.getApprovalConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,5 +55,15 @@ public class CrudServiceTest {
         List<Pos> result = service.getAll();
 
         assertThat(result).isEqualTo(List.of(pos));
+    }
+
+    @Test
+    void testGetById(){
+        Pos pos = TestFixtures.getPosFixtures().getFirst();
+        when(dataService.getById(pos.getId())).thenReturn(pos);
+
+        Pos result = service.getById(pos.getId());
+
+        assertThat(result).isEqualTo(pos);
     }
 }
